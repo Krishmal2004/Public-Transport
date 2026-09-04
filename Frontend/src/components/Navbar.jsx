@@ -5,10 +5,10 @@ export default function Navbar() {
   const location = useLocation();
   const path = location.pathname;
 
-  // Determine which layout to show based on current route
+  // Broaden the condition to include the dashboard and any dynamic report detail routes
   const isPublicPage = path === '/' || path === '/login' || path === '/register';
-  const isDriverPage = path === '/report';
-  const isAdminPage = path === '/dashboard' || path === '/queue';
+  const isDriverPage = path.startsWith('/report') || path.startsWith('/user-dashboard');
+  const isAdminPage = path.startsWith('/dashboard') || path.startsWith('/queue');
 
   return (
     <header className="gov-navbar">
@@ -27,7 +27,10 @@ export default function Navbar() {
 
           {isDriverPage && (
             <>
-              <NavLink to="/report" className={({ isActive }) => isActive ? "gov-nav-link active" : "gov-nav-link"}>
+              <NavLink to="/user-dashboard" className={({ isActive }) => isActive ? "gov-nav-link active" : "gov-nav-link"}>
+                My Reports
+              </NavLink>
+              <NavLink to="/report" className={({ isActive }) => isActive ? "gov-nav-link active" : "gov-nav-link"} end>
                 Log Breakdown
               </NavLink>
               <NavLink to="/" className="gov-nav-link" style={{color: '#cf222e'}}>
@@ -38,7 +41,7 @@ export default function Navbar() {
 
           {isAdminPage && (
             <>
-              <NavLink to="/dashboard" className={({ isActive }) => isActive ? "gov-nav-link active" : "gov-nav-link"}>
+              <NavLink to="/dashboard" className={({ isActive }) => isActive ? "gov-nav-link active" : "gov-nav-link"} end>
                 Admin Dashboard
               </NavLink>
               <NavLink to="/queue" className={({ isActive }) => isActive ? "gov-nav-link active" : "gov-nav-link"}>

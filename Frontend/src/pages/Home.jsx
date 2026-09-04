@@ -65,7 +65,7 @@ const LoginModal = ({ onClose, onSuccess }) => {
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.username.trim()) newErrors.username = 'Username is required.';
+    if (!formData.username.trim()) newErrors.username = 'User Email is required.';
     if (!formData.password) newErrors.password = 'Password is required.';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -74,15 +74,6 @@ const LoginModal = ({ onClose, onSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-
-    // Hardcoded Admin Check
-    if (formData.username === 'admin@sltb.lk' && formData.password === 'admin123') {
-      const adminUser = { name: 'System Admin', role: 'admin' };
-      localStorage.setItem('token', 'fake-admin-token');
-      localStorage.setItem('user', JSON.stringify(adminUser));
-      onSuccess(adminUser);
-      return;
-    }
 
     setLoading(true);
     setApiError('');
@@ -104,6 +95,8 @@ const LoginModal = ({ onClose, onSuccess }) => {
 
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
+      
+      // Pass the user data back to the parent component for role-based routing
       onSuccess(data.user);
     } catch (err) {
       setApiError('Network error. Please try again.');
@@ -220,7 +213,7 @@ const RegisterModal = ({ onClose, onSuccess }) => {
           {apiError && <div style={{ color: '#cf222e', fontSize: '13px', marginBottom: '16px', padding: '10px 12px', backgroundColor: '#fff5f5', border: '1px solid #f5c6cb', borderRadius: '4px' }}>{apiError}</div>}
           <div style={modalStyles.formGroup}>
             <label style={modalStyles.label} htmlFor="name">FULL NAME *</label>
-            <input style={{...modalStyles.input, borderColor: errors.name ? '#cf222e' : 'var(--border, #ccc)'}} type="text" id="name" name="name" value={formData.name} onChange={handleChange} placeholder="User Name" />
+            <input style={{...modalStyles.input, borderColor: errors.name ? '#cf222e' : 'var(--border, #ccc)'}} type="text" id="name" name="name" value={formData.name} onChange={handleChange} placeholder="User Email" />
             {errors.name && <span style={modalStyles.errorText}>{errors.name}</span>}
           </div>
           {errors.contact && <div style={{...modalStyles.errorText, marginBottom: '12px'}}>{errors.contact}</div>}
@@ -310,16 +303,27 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Team Contribution Section - Hackathon Requirement */}
+      <div style={{ marginTop: '24px', padding: '24px 20px', backgroundColor: 'var(--gov-light-gray)', border: '1px solid var(--border)', borderRadius: '4px' }}>
+        <h3 style={{ fontSize: '18px', color: 'var(--gov-black)', marginBottom: '12px' }}>
+          Built by Team [Your Team Name]
+        </h3>
+        <ul style={{ listStyleType: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', color: 'var(--gov-dark-gray)', fontSize: '14px' }}>
+          <li><strong>Member 1:</strong> UI & Dashboard</li>
+          <li><strong>Member 2:</strong> Incident Validation</li>
+          <li><strong>Member 3:</strong> Repair Queue & Filters</li>
+          <li><strong>Member 4:</strong> DevOps & AI Hook</li>
+        </ul>
+      </div>
+
       {/* Render Modals based on active state */}
       {activeModal === 'login' && (
         <LoginModal 
           onClose={() => setActiveModal(null)} 
           onSuccess={(user) => {
-            if (user && user.role === 'admin') {
-              navigate('/dashboard');
-            } else {
-              navigate('/report');
-            }
+            // Optional: If your backend returns an 'admin' role, you can route them to the admin dashboard instead.
+            // if (user?.role === 'admin') { navigate('/dashboard'); return; }
+            navigate('/user-dashboard');
           }}
         />
       )}

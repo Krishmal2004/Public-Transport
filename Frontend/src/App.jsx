@@ -7,6 +7,8 @@ import RepairQueue from './pages/RepairQueue';
 // import Register from './pages/Register';
 // import Login from './pages/Login';
 import IncidentReport from './components/users/IncidentReport';
+import UserDashboard from './components/users/UserDashboard';
+import ReportDetailView from './components/users/ReportDetailView';
 
 import './App.css';
 
@@ -22,6 +24,8 @@ function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="queue" element={<RepairQueue />} />
           <Route path="incident-report" element={<IncidentReport />} />
+          <Route path="user-dashboard" element={<UserDashboard />} />
+          <Route path="report/:id" element={<ReportDetailView />} />
         </Route>
       </Routes>
     </Router>

@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // 1. Import useNavigate
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 export default function IncidentReport() {
+  const navigate = useNavigate(); // 2. Initialize navigate
+  
   const [formData, setFormData] = useState({
     busNo: '',
     depot: '',
@@ -13,10 +16,9 @@ export default function IncidentReport() {
   });
 
   const [errors, setErrors] = useState({});
-  const [submitStatus, setSubmitStatus] = useState(null); // { type: 'success'|'error', message: string }
+  const [submitStatus, setSubmitStatus] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch location automatically on mount
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -34,7 +36,6 @@ export default function IncidentReport() {
     }
   }, []);
 
-  // Client-side pre-validation (fast feedback before hitting the server)
   const validate = () => {
     const newErrors = {};
     const busRegex = /^[A-Z]{2,3}-[0-9]{4}$/;
@@ -56,7 +57,6 @@ export default function IncidentReport() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Run client-side checks first
     if (!validate()) return;
 
     setIsSubmitting(true);
@@ -72,20 +72,11 @@ export default function IncidentReport() {
       const data = await response.json();
 
       if (response.ok) {
-        // Success — reset form (keep location)
-        setSubmitStatus({ type: 'success', message: data.message || 'Incident reported successfully.' });
-        setFormData(prev => ({
-          ...prev,
-          busNo: '',
-          depot: '',
-          category: '',
-          severity: '',
-          description: '',
-        }));
-        setErrors({});
-        setTimeout(() => setSubmitStatus(null), 4000);
+        // 3. Navigate to the view details page using the newly created ID
+        // Adjust the route '/report-details/' to match whatever you named the route in App.jsx
+        const newIncidentId = data.data?.id || ''; 
+        navigate(`/report/id=${newIncidentId}`); 
       } else if (response.status === 400 && data.errors) {
-        // Server returned field-level validation errors — merge into local errors
         setErrors(data.errors);
         setSubmitStatus({ type: 'error', message: data.message || 'Please correct the errors below.' });
       } else {
@@ -225,7 +216,6 @@ export default function IncidentReport() {
                 <button
                   type="button"
                   onClick={() => {
-                    // Mock AI Suggestion
                     setFormData(prev => ({ ...prev, severity: 'Critical' }));
                     alert("AI Analysis: 'Critical Safety Hazard' detected based on description.");
                   }}
