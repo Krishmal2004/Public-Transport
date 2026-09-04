@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -40,7 +42,8 @@ const Login = () => {
     e.preventDefault();
     if (validate()) {
       console.log('Login credentials validated!', formData);
-      // Add your API authentication logic here
+      // Simulate successful login routing
+      navigate('/report');
     }
   };
 
