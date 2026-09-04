@@ -107,7 +107,7 @@ const LoginModal = ({ onClose, onSuccess }) => {
       
       // Pass the user data back to the parent component for role-based routing
       onSuccess(data.user);
-    } catch (err) {
+    } catch (_err) {
       setApiError('Network error. Please try again.');
     } finally {
       setLoading(false);
@@ -203,7 +203,7 @@ const RegisterModal = ({ onClose, onSuccess }) => {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       onSuccess();
-    } catch (err) {
+    } catch (_err) {
       setApiError('Network error. Please check your connection and try again.');
     } finally {
       setLoading(false);

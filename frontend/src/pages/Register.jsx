@@ -99,7 +99,7 @@ const Register = () => {
 
       // Navigate to incident report form
       setTimeout(() => navigate('/report'), 1500);
-    } catch (err) {
+    } catch (_err) {
       setApiError('Network error. Please check your connection and try again.');
     } finally {
       setLoading(false);

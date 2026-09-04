@@ -27,7 +27,7 @@ export default function IncidentReport() {
           const lon = position.coords.longitude.toFixed(4);
           setFormData(prev => ({ ...prev, location: `${lat}, ${lon}` }));
         },
-        (error) => {
+        (_error) => {
           setFormData(prev => ({ ...prev, location: 'Location access denied or unavailable' }));
         }
       );
@@ -82,7 +82,7 @@ export default function IncidentReport() {
       } else {
         setSubmitStatus({ type: 'error', message: data.message || 'Something went wrong. Please try again.' });
       }
-    } catch (networkError) {
+    } catch (_networkError) {
       setSubmitStatus({ type: 'error', message: 'Unable to reach the server. Check your connection and try again.' });
     } finally {
       setIsSubmitting(false);
