@@ -310,19 +310,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Team Contribution Section - Hackathon Requirement */}
-      <div style={{ marginTop: '24px', padding: '24px 20px', backgroundColor: 'var(--gov-light-gray)', border: '1px solid var(--border)', borderRadius: '4px' }}>
-        <h3 style={{ fontSize: '18px', color: 'var(--gov-black)', marginBottom: '12px' }}>
-          Built by Team [Your Team Name]
-        </h3>
-        <ul style={{ listStyleType: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', color: 'var(--gov-dark-gray)', fontSize: '14px' }}>
-          <li><strong>Member 1:</strong> UI & Dashboard</li>
-          <li><strong>Member 2:</strong> Incident Validation</li>
-          <li><strong>Member 3:</strong> Repair Queue & Filters</li>
-          <li><strong>Member 4:</strong> DevOps & AI Hook</li>
-        </ul>
-      </div>
-
       {/* Render Modals based on active state */}
       {activeModal === 'login' && (
         <LoginModal 

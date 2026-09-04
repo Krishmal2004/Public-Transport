@@ -1,18 +1,45 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import IncidentCard from '../components/IncidentCard';
 import { mockIncidents } from '../data/mockData';
 
 export default function Dashboard() {
+  const [incidents, setIncidents] = useState(mockIncidents);
+
+  useEffect(() => {
+    const fetchIncidents = async () => {
+      try {
+        const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+        const res = await fetch(`${API_BASE}/incidents`);
+        const data = await res.json();
+        if (data.success && data.data) {
+          const mapped = data.data.map(inc => ({
+            id: `TKT-${inc.id}`,
+            busNo: inc.bus_no,
+            depot: inc.depot,
+            category: inc.category,
+            severity: inc.severity,
+            status: inc.status || 'Reported',
+            time: new Date(inc.created_at).toLocaleString()
+          }));
+          setIncidents(mapped);
+        }
+      } catch (error) {
+        console.error("Failed to fetch live incidents:", error);
+      }
+    };
+    fetchIncidents();
+  }, []);
+
   // Dynamic Calculations based on data
-  const totalIncidents = mockIncidents.length;
-  const groundedBuses = mockIncidents.filter(inc => inc.status !== 'Fixed').length;
-  const repairsInProgress = mockIncidents.filter(inc => inc.status === 'In Workshop' || inc.status === 'In-Progress').length;
-  
+  const totalIncidents = incidents.length;
+  const groundedBuses = incidents.filter(inc => inc.status !== 'Fixed').length;
+  const repairsInProgress = incidents.filter(inc => inc.status === 'In Workshop' || inc.status === 'In-Progress').length;
+
   // Just a mockup number for active fleet
   const activeFleet = 7100 - groundedBuses; // Out of 7100 total buses (from spec)
 
   // Get only critical/high recent incidents for the dashboard display
-  const recentCriticalBreakdowns = mockIncidents
+  const recentCriticalBreakdowns = incidents
     .filter(inc => inc.severity === 'Critical' || inc.severity === 'High')
     .slice(0, 3); // Show top 3
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { mockIncidents } from '../data/mockData';
 
 export default function RepairQueue() {
@@ -7,12 +7,37 @@ export default function RepairQueue() {
   const [filterStatus, setFilterStatus] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 
+  useEffect(() => {
+    const fetchIncidents = async () => {
+      try {
+        const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+        const res = await fetch(`${API_BASE}/incidents`);
+        const data = await res.json();
+        if (data.success && data.data) {
+          const mapped = data.data.map(inc => ({
+            id: `TKT-${inc.id}`,
+            busNo: inc.bus_no,
+            depot: inc.depot,
+            category: inc.category,
+            severity: inc.severity,
+            status: inc.status || 'Reported',
+            time: new Date(inc.created_at).toLocaleString()
+          }));
+          setQueue(mapped);
+        }
+      } catch (error) {
+        console.error("Failed to fetch live incidents:", error);
+      }
+    };
+    fetchIncidents();
+  }, []);
+
   // Filtering logic
   const filteredQueue = queue.filter(item => {
     const matchDepot = filterDepot === 'All' || item.depot === filterDepot;
     const matchStatus = filterStatus === 'All' || item.status === filterStatus;
-    const matchSearch = item.busNo.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                        item.id.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchSearch = item.busNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.id.toLowerCase().includes(searchQuery.toLowerCase());
     return matchDepot && matchStatus && matchSearch;
   });
 
@@ -21,7 +46,7 @@ export default function RepairQueue() {
   };
 
   const severityColor = (sev) => {
-    switch(sev) {
+    switch (sev) {
       case 'Critical': return 'gov-sev-critical';
       case 'High': return 'gov-sev-high';
       default: return 'gov-sev-low';
@@ -29,7 +54,7 @@ export default function RepairQueue() {
   };
 
   const statusColor = (status) => {
-    switch(status) {
+    switch (status) {
       case 'Reported': return 'gov-stat-reported';
       case 'In Workshop':
       case 'In-Progress': return 'gov-stat-progress';
@@ -47,15 +72,15 @@ export default function RepairQueue() {
       </div>
 
       <div className="gov-filters-section">
-        <input 
-          type="text" 
-          placeholder="Search Bus No or Ticket ID..." 
+        <input
+          type="text"
+          placeholder="Search Bus No or Ticket ID..."
           className="gov-input gov-search-bar"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        
-        <select 
+
+        <select
           className="gov-select"
           value={filterDepot}
           onChange={(e) => setFilterDepot(e.target.value)}
@@ -66,7 +91,7 @@ export default function RepairQueue() {
           <option value="Meegoda">Meegoda</option>
         </select>
 
-        <select 
+        <select
           className="gov-select"
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
@@ -110,7 +135,7 @@ export default function RepairQueue() {
                   </span>
                 </td>
                 <td>
-                  <select 
+                  <select
                     className="gov-action-select"
                     value={item.status}
                     onChange={(e) => handleStatusChange(item.id, e.target.value)}
