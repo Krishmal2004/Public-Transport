@@ -51,7 +51,8 @@ const Login = () => {
     setSuccess('');
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+      const response = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -72,7 +73,8 @@ const Login = () => {
       localStorage.setItem('user', JSON.stringify(data.user));
       setSuccess(`Welcome back, ${data.user.name}!`);
 
-      // TODO: redirect to dashboard e.g. navigate('/dashboard')
+      // Navigate to incident report form
+      setTimeout(() => navigate('/report'), 1500);
     } catch (err) {
       setApiError('Network error. Please check your connection and try again.');
     } finally {

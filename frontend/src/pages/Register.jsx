@@ -70,7 +70,8 @@ const Register = () => {
     setSuccess('');
 
     try {
-      const response = await fetch('/api/auth/register', {
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+      const response = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -96,7 +97,8 @@ const Register = () => {
       // Reset form
       setFormData({ name: '', phone: '', email: '', password: '', confirmPassword: '' });
 
-      // TODO: redirect to dashboard e.g. navigate('/dashboard')
+      // Navigate to incident report form
+      setTimeout(() => navigate('/report'), 1500);
     } catch (err) {
       setApiError('Network error. Please check your connection and try again.');
     } finally {

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // --- MODAL STYLES ---
 const modalStyles = {
@@ -49,14 +50,17 @@ const modalStyles = {
 };
 
 // --- LOGIN MODAL COMPONENT ---
-const LoginModal = ({ onClose }) => {
+const LoginModal = ({ onClose, onSuccess }) => {
   const [formData, setFormData] = useState({ username: '', password: '' });
   const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
+    setApiError('');
   };
 
   const validate = () => {
@@ -67,12 +71,44 @@ const LoginModal = ({ onClose }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validate()) {
-      console.log('Login credentials validated!', formData);
-      // Execute your login logic here, then close modal
-      onClose();
+    if (!validate()) return;
+
+    // Hardcoded Admin Check
+    if (formData.username === 'admin@sltb.lk' && formData.password === 'admin123') {
+      const adminUser = { name: 'System Admin', role: 'admin' };
+      localStorage.setItem('token', 'fake-admin-token');
+      localStorage.setItem('user', JSON.stringify(adminUser));
+      onSuccess(adminUser);
+      return;
+    }
+
+    setLoading(true);
+    setApiError('');
+
+    try {
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+      const response = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setApiError(data.message || 'Login failed. Please try again.');
+        return;
+      }
+
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      onSuccess(data.user);
+    } catch (err) {
+      setApiError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,11 +121,12 @@ const LoginModal = ({ onClose }) => {
           <p className="gov-subtitle" style={{marginBottom: '24px'}}>Enter your credentials to access the dashboard.</p>
         </div>
         <form onSubmit={handleSubmit} noValidate>
+          {apiError && <div style={{ color: '#cf222e', fontSize: '13px', marginBottom: '16px', padding: '10px 12px', backgroundColor: '#fff5f5', border: '1px solid #f5c6cb', borderRadius: '4px' }}>{apiError}</div>}
           <div style={modalStyles.formGroup}>
             <label style={modalStyles.label} htmlFor="username">USERNAME</label>
             <input
               style={{...modalStyles.input, borderColor: errors.username ? '#cf222e' : 'var(--border, #ccc)'}}
-              type="text" id="username" name="username" value={formData.username} onChange={handleChange} placeholder="Enter your username"
+              type="text" id="username" name="username" value={formData.username} onChange={handleChange} placeholder="Enter your email or phone"
             />
             {errors.username && <span style={modalStyles.errorText}>{errors.username}</span>}
           </div>
@@ -101,7 +138,7 @@ const LoginModal = ({ onClose }) => {
             />
             {errors.password && <span style={modalStyles.errorText}>{errors.password}</span>}
           </div>
-          <button type="submit" style={modalStyles.submitBtn}>Sign In</button>
+          <button type="submit" style={modalStyles.submitBtn} disabled={loading}>{loading ? 'Signing in...' : 'Sign In'}</button>
         </form>
       </div>
     </div>
@@ -109,15 +146,18 @@ const LoginModal = ({ onClose }) => {
 };
 
 // --- REGISTER MODAL COMPONENT ---
-const RegisterModal = ({ onClose, onSwitchToLogin }) => {
+const RegisterModal = ({ onClose, onSuccess }) => {
   const [formData, setFormData] = useState({ name: '', phone: '', email: '', password: '', confirmPassword: '' });
   const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
     if (errors.contact && (name === 'phone' || name === 'email')) setErrors((prev) => ({ ...prev, contact: null }));
+    setApiError('');
   };
 
   const validate = () => {
@@ -131,11 +171,40 @@ const RegisterModal = ({ onClose, onSwitchToLogin }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validate()) {
-      console.log('Form validated successfully!', formData);
-      onSwitchToLogin();
+    if (!validate()) return;
+    
+    setLoading(true);
+    setApiError('');
+
+    try {
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+      const response = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          phone: formData.phone || undefined,
+          email: formData.email || undefined,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setApiError(data.message || 'Registration failed. Please try again.');
+        return;
+      }
+
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      onSuccess();
+    } catch (err) {
+      setApiError('Network error. Please check your connection and try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -148,6 +217,7 @@ const RegisterModal = ({ onClose, onSwitchToLogin }) => {
           <p className="gov-subtitle" style={{marginBottom: '24px'}}>Enter your details to create an account.</p>
         </div>
         <form onSubmit={handleSubmit} noValidate>
+          {apiError && <div style={{ color: '#cf222e', fontSize: '13px', marginBottom: '16px', padding: '10px 12px', backgroundColor: '#fff5f5', border: '1px solid #f5c6cb', borderRadius: '4px' }}>{apiError}</div>}
           <div style={modalStyles.formGroup}>
             <label style={modalStyles.label} htmlFor="name">FULL NAME *</label>
             <input style={{...modalStyles.input, borderColor: errors.name ? '#cf222e' : 'var(--border, #ccc)'}} type="text" id="name" name="name" value={formData.name} onChange={handleChange} placeholder="User Name" />
@@ -177,7 +247,7 @@ const RegisterModal = ({ onClose, onSwitchToLogin }) => {
               {errors.confirmPassword && <span style={modalStyles.errorText}>{errors.confirmPassword}</span>}
             </div>
           </div>
-          <button type="submit" style={modalStyles.submitBtn}>Register Account</button>
+          <button type="submit" style={modalStyles.submitBtn} disabled={loading}>{loading ? 'Registering...' : 'Register Account'}</button>
         </form>
       </div>
     </div>
@@ -187,6 +257,7 @@ const RegisterModal = ({ onClose, onSwitchToLogin }) => {
 // --- MAIN HOME COMPONENT ---
 export default function Home() {
   const [activeModal, setActiveModal] = useState(null); // 'login' | 'register' | null
+  const navigate = useNavigate();
 
   const styles = {
     hero: {
@@ -241,12 +312,21 @@ export default function Home() {
 
       {/* Render Modals based on active state */}
       {activeModal === 'login' && (
-        <LoginModal onClose={() => setActiveModal(null)} />
+        <LoginModal 
+          onClose={() => setActiveModal(null)} 
+          onSuccess={(user) => {
+            if (user && user.role === 'admin') {
+              navigate('/dashboard');
+            } else {
+              navigate('/report');
+            }
+          }}
+        />
       )}
       {activeModal === 'register' && (
         <RegisterModal 
           onClose={() => setActiveModal(null)} 
-          onSwitchToLogin={() => setActiveModal('login')} 
+          onSuccess={() => setActiveModal('login')}
         />
       )}
     </div>
