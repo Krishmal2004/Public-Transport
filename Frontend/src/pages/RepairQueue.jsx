@@ -1,35 +1,81 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-// Mock data (Member 4's dataset contribution)
-const initialQueue = [
-  { id: 'TKT-001', busNo: 'NB-4521', depot: 'Maharagama', category: 'Brake Failure', severity: 'Critical', status: 'Reported', time: '2h ago' },
-  { id: 'TKT-002', busNo: 'WP NA-1290', depot: 'Pettah', category: 'Engine Overheating', severity: 'High', status: 'In Workshop', time: '5h ago' },
-  { id: 'TKT-003', busNo: 'NC-3341', depot: 'Meegoda', category: 'Electrical Issue', severity: 'Low', status: 'In-Progress', time: '1d ago' },
-  { id: 'TKT-004', busNo: 'ND-1122', depot: 'Maharagama', category: 'Transmission', severity: 'High', status: 'Fixed', time: '2d ago' },
-  { id: 'TKT-005', busNo: 'WP NA-9900', depot: 'Pettah', category: 'Body Damage', severity: 'Low', status: 'Reported', time: '3h ago' },
-];
+const API_BASE = 'http://localhost:8000/api';
 
 export default function RepairQueue() {
-  const [queue, setQueue] = useState(initialQueue);
+  const [queue, setQueue] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filterDepot, setFilterDepot] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [updatingId, setUpdatingId] = useState(null); // tracks which row is being saved
+
+  // Fetch all incidents on mount
+  useEffect(() => {
+    const fetchQueue = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/incidents`);
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message || 'Failed to load repair queue');
+        // Map snake_case DB fields to camelCase for the UI
+        setQueue(json.data.map(normalise));
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchQueue();
+  }, []);
+
+  /** Normalise a DB row into the shape RepairQueue expects */
+  const normalise = (row) => ({
+    id: row.id,
+    ticketId: `TKT-${String(row.id).padStart(3, '0')}`,
+    busNo: row.bus_no,
+    depot: row.depot,
+    category: row.category,
+    severity: row.severity,
+    status: row.status,
+    description: row.description,
+    created_at: row.created_at,
+  });
+
+  /** PATCH status on the server, then update local state */
+  const handleStatusChange = async (id, newStatus) => {
+    setUpdatingId(id);
+    try {
+      const res = await fetch(`${API_BASE}/incidents/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || 'Update failed');
+      // Update local state with the confirmed value from the server
+      setQueue(prev =>
+        prev.map(item => item.id === id ? { ...item, status: json.data.status } : item)
+      );
+    } catch (err) {
+      alert(`Could not update status: ${err.message}`);
+    } finally {
+      setUpdatingId(null);
+    }
+  };
 
   // Filtering logic
   const filteredQueue = queue.filter(item => {
     const matchDepot = filterDepot === 'All' || item.depot === filterDepot;
     const matchStatus = filterStatus === 'All' || item.status === filterStatus;
-    const matchSearch = item.busNo.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                        item.id.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchSearch =
+      item.busNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.ticketId.toLowerCase().includes(searchQuery.toLowerCase());
     return matchDepot && matchStatus && matchSearch;
   });
 
-  const handleStatusChange = (id, newStatus) => {
-    setQueue(queue.map(item => item.id === id ? { ...item, status: newStatus } : item));
-  };
-
   const severityColor = (sev) => {
-    switch(sev) {
+    switch (sev) {
       case 'Critical': return 'gov-sev-critical';
       case 'High': return 'gov-sev-high';
       default: return 'gov-sev-low';
@@ -37,7 +83,7 @@ export default function RepairQueue() {
   };
 
   const statusColor = (status) => {
-    switch(status) {
+    switch (status) {
       case 'Reported': return 'gov-stat-reported';
       case 'In Workshop':
       case 'In-Progress': return 'gov-stat-progress';
@@ -54,16 +100,22 @@ export default function RepairQueue() {
         <p className="gov-subtitle">Live tracking and processing of all fleet breakdown incidents.</p>
       </div>
 
+      {error && (
+        <div style={{ padding: '12px', backgroundColor: '#fff0f0', color: '#cf222e', border: '1px solid #ff9898', borderRadius: '4px', marginBottom: '20px' }}>
+          ⚠ {error}
+        </div>
+      )}
+
       <div className="gov-filters-section">
-        <input 
-          type="text" 
-          placeholder="Search Bus No or Ticket ID..." 
+        <input
+          type="text"
+          placeholder="Search Bus No or Ticket ID..."
           className="gov-input gov-search-bar"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        
-        <select 
+
+        <select
           className="gov-select"
           value={filterDepot}
           onChange={(e) => setFilterDepot(e.target.value)}
@@ -74,7 +126,7 @@ export default function RepairQueue() {
           <option value="Meegoda">Meegoda</option>
         </select>
 
-        <select 
+        <select
           className="gov-select"
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
@@ -101,9 +153,15 @@ export default function RepairQueue() {
             </tr>
           </thead>
           <tbody>
-            {filteredQueue.map((item) => (
+            {loading && (
+              <tr>
+                <td colSpan="7" className="gov-empty-state">Loading repair queue...</td>
+              </tr>
+            )}
+
+            {!loading && filteredQueue.map((item) => (
               <tr key={item.id}>
-                <td className="gov-mono">{item.id}</td>
+                <td className="gov-mono">{item.ticketId}</td>
                 <td className="gov-bold">{item.busNo}</td>
                 <td>{item.depot}</td>
                 <td>{item.category}</td>
@@ -118,9 +176,10 @@ export default function RepairQueue() {
                   </span>
                 </td>
                 <td>
-                  <select 
+                  <select
                     className="gov-action-select"
                     value={item.status}
+                    disabled={updatingId === item.id}
                     onChange={(e) => handleStatusChange(item.id, e.target.value)}
                   >
                     <option value="Reported">Set: Reported</option>
@@ -131,7 +190,8 @@ export default function RepairQueue() {
                 </td>
               </tr>
             ))}
-            {filteredQueue.length === 0 && (
+
+            {!loading && filteredQueue.length === 0 && (
               <tr>
                 <td colSpan="7" className="gov-empty-state">No matching repair tickets found.</td>
               </tr>
