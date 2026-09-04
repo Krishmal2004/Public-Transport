@@ -7,7 +7,10 @@ const startServer = async () => {
   await initDB();
 
   app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    const host = process.env.WEBSITE_HOSTNAME 
+      ? `https://${process.env.WEBSITE_HOSTNAME}` 
+      : `http://localhost:${PORT}`;
+    console.log(`Server running on ${host}`);
   });
 };
 
