@@ -3,6 +3,10 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import RepairQueue from './pages/RepairQueue';
+import './App.css';
+import Register from './pages/Register';
+import Login from './pages/Login';
+
 
 function App() {
   return (
@@ -17,6 +21,8 @@ function App() {
             </div>
           } />
           <Route path="queue" element={<RepairQueue />} />
+          <Route path="register" element={<Register />} />
+          <Route path="login" element={<Login />} />
         </Route>
       </Routes>
     </Router>

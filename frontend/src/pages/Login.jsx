@@ -1,0 +1,113 @@
+import React, { useState } from 'react';
+
+const Login = () => {
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+  });
+
+  const [errors, setErrors] = useState({});
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    
+    // Clear error for the field being typed in
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: null }));
+    }
+  };
+
+  const validate = () => {
+    const newErrors = {};
+
+    if (!formData.username.trim()) {
+      newErrors.username = 'Username is required.';
+    }
+
+    if (!formData.password) {
+      newErrors.password = 'Password is required.';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (validate()) {
+      console.log('Login credentials validated!', formData);
+      // Add your API authentication logic here
+    }
+  };
+
+  // Inline styles for form elements keeping consistency with your gov-theme
+  const styles = {
+    container: { maxWidth: '500px', margin: '0 auto', padding: '0 16px' },
+    formGroup: { marginBottom: '20px', display: 'flex', flexDirection: 'column' },
+    label: { fontSize: '13px', fontWeight: '600', color: 'var(--gov-dark-gray, #4a4a4a)', marginBottom: '8px', textTransform: 'uppercase' },
+    input: { padding: '10px 12px', border: '1px solid var(--border, #ccc)', borderRadius: '4px', fontSize: '14px' },
+    errorText: { color: '#cf222e', fontSize: '12px', marginTop: '4px', fontWeight: '500' },
+    submitBtn: { 
+      backgroundColor: 'var(--gov-black, #1a1a1a)', color: '#fff', border: 'none', 
+      padding: '12px 20px', fontSize: '14px', fontWeight: '600', borderRadius: '4px', cursor: 'pointer', marginTop: '8px' 
+    }
+  };
+
+  return (
+    <div className="main-content">
+      <div style={styles.container}>
+        
+        {/* Header matching your theme */}
+        <div className="gov-page-header">
+          <h1>System Login</h1>
+          <p className="gov-subtitle">Enter your credentials to access the dashboard.</p>
+        </div>
+
+        {/* Utilizing your metric card class as a clean container for the form */}
+        <div className="gov-metric-card" style={{ padding: '32px' }}>
+          <form onSubmit={handleSubmit} noValidate>
+            
+            <div style={styles.formGroup}>
+              <label style={styles.label} htmlFor="username">USERNAME</label>
+              <input
+                style={{...styles.input, borderColor: errors.username ? '#cf222e' : 'var(--border, #ccc)'}}
+                type="text"
+                id="username"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                placeholder="Enter your username"
+              />
+              {errors.username && <span style={styles.errorText}>{errors.username}</span>}
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label} htmlFor="password">PASSWORD</label>
+              <input
+                style={{...styles.input, borderColor: errors.password ? '#cf222e' : 'var(--border, #ccc)'}}
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+              />
+              {errors.password && <span style={styles.errorText}>{errors.password}</span>}
+            </div>
+
+            <button type="submit" style={styles.submitBtn}>
+              Sign In
+            </button>
+            
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Login;
