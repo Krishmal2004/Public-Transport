@@ -75,6 +75,15 @@ const LoginModal = ({ onClose, onSuccess }) => {
     e.preventDefault();
     if (!validate()) return;
 
+    // Hardcoded Admin Check
+    if (formData.username === 'admin@sltb.lk' && formData.password === 'admin123') {
+      const adminUser = { name: 'System Admin', role: 'admin' };
+      localStorage.setItem('token', 'fake-admin-token');
+      localStorage.setItem('user', JSON.stringify(adminUser));
+      onSuccess(adminUser);
+      return;
+    }
+
     setLoading(true);
     setApiError('');
 
@@ -321,9 +330,11 @@ export default function Home() {
         <LoginModal 
           onClose={() => setActiveModal(null)} 
           onSuccess={(user) => {
-            // Optional: If your backend returns an 'admin' role, you can route them to the admin dashboard instead.
-            // if (user?.role === 'admin') { navigate('/dashboard'); return; }
-            navigate('/user-dashboard');
+            if (user && user.role === 'admin') {
+              navigate('/dashboard');
+            } else {
+              navigate('/report');
+            }
           }}
         />
       )}
