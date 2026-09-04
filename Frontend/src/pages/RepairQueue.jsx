@@ -7,15 +7,17 @@ export default function RepairQueue() {
   const [filterStatus, setFilterStatus] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
   useEffect(() => {
     const fetchIncidents = async () => {
       try {
-        const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
         const res = await fetch(`${API_BASE}/incidents`);
         const data = await res.json();
         if (data.success && data.data) {
           const mapped = data.data.map(inc => ({
             id: `TKT-${inc.id}`,
+            rawId: inc.id,
             busNo: inc.bus_no,
             depot: inc.depot,
             category: inc.category,
@@ -30,7 +32,43 @@ export default function RepairQueue() {
       }
     };
     fetchIncidents();
-  }, []);
+  }, [API_BASE]);
+
+  // Handle status change and sync with backend safely
+  const handleStatusChange = async (displayId, rawId, newStatus) => {
+    // Optimistically update UI state immediately
+    setQueue(prevQueue =>
+      prevQueue.map(item => item.id === displayId ? { ...item, status: newStatus } : item)
+    );
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE}/incidents/${rawId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` })
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      // Check if the server responded with HTML (like a 404 or 500 error page) instead of JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const errorText = await response.text();
+        throw new Error(`Server returned non-JSON response (Check if API route /api/incidents/${rawId}/status exists).`);
+      }
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Failed to update status on server');
+      }
+    } catch (error) {
+      console.error("Error updating incident status:", error);
+      alert(`Failed to save status change: ${error.message}`);
+    }
+  };
 
   // Filtering logic
   const filteredQueue = queue.filter(item => {
@@ -40,10 +78,6 @@ export default function RepairQueue() {
       item.id.toLowerCase().includes(searchQuery.toLowerCase());
     return matchDepot && matchStatus && matchSearch;
   });
-
-  const handleStatusChange = (id, newStatus) => {
-    setQueue(queue.map(item => item.id === id ? { ...item, status: newStatus } : item));
-  };
 
   const severityColor = (sev) => {
     switch (sev) {
@@ -138,7 +172,7 @@ export default function RepairQueue() {
                   <select
                     className="gov-action-select"
                     value={item.status}
-                    onChange={(e) => handleStatusChange(item.id, e.target.value)}
+                    onChange={(e) => handleStatusChange(item.id, item.rawId, e.target.value)}
                   >
                     <option value="Reported">Set: Reported</option>
                     <option value="In Workshop">Set: In Workshop</option>

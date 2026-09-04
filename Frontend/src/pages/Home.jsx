@@ -333,7 +333,7 @@ export default function Home() {
             if (user && user.role === 'admin') {
               navigate('/dashboard');
             } else {
-              navigate('/report');
+              navigate('/user-dashboard');
             }
           }}
         />

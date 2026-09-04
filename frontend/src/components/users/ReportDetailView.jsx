@@ -1,30 +1,75 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const ReportDetailView = () => {
   const navigate = useNavigate();
+  const params = useParams();
 
-  // Mocking the data exactly as it appears in your network response screenshot.
-  // In reality, you would fetch this by ID or pass it via state.
-  // Note: For the 5-minute timer to work locally right now, we simulate the created_at as "just now".
-  const [report, setReport] = useState({
-    id: 4,
-    bus_no: "NB-7089",
-    depot: "Maharagama",
-    category: "Brake Failure",
-    severity: "Low",
-    description: "",
-    location: "6.9142, 79.9736",
-    created_at: new Date().toISOString(), // Simulating recent submission
-    status: "Reported"
-  });
+  // Safely extract the numeric ID whether the route is configured as :id or :id param string
+  const rawParam = params.id || '';
+  const incidentId = rawParam.includes('=') ? rawParam.split('=')[1] : rawParam;
+
+  const [report, setReport] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({ ...report });
+  const [editData, setEditData] = useState(null);
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
 
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
+  // Fetch the specific incident by its ID directly from the backend
   useEffect(() => {
-    // Calculate initial time difference based on created_at
+    const fetchIncidentDetails = async () => {
+      if (!incidentId) {
+        setError('Invalid incident ID');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE}/incidents`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` })
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch incident details');
+        }
+
+        const responseData = await response.json();
+        const allIncidents = responseData.data || responseData;
+
+        // Match the incident by numeric ID
+        const currentIncident = allIncidents.find(
+          (inc) => String(inc.id) === String(incidentId)
+        );
+
+        if (!currentIncident) {
+          throw new Error(`Incident #${incidentId} not found.`);
+        }
+
+        setReport(currentIncident);
+        setEditData(currentIncident);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchIncidentDetails();
+  }, [incidentId, API_BASE]);
+
+  // Countdown timer logic based on the real created_at timestamp
+  useEffect(() => {
+    if (!report?.created_at) return;
+
     const createdTime = new Date(report.created_at).getTime();
     const currentTime = new Date().getTime();
     const diffInSeconds = Math.max(0, 300 - Math.floor((currentTime - createdTime) / 1000));
@@ -33,12 +78,11 @@ const ReportDetailView = () => {
 
     if (diffInSeconds <= 0) return;
 
-    // Start live countdown timer
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          setIsEditing(false); // Force close edit mode if time runs out
+          setIsEditing(false);
           return 0;
         }
         return prev - 1;
@@ -46,7 +90,7 @@ const ReportDetailView = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [report.created_at]);
+  }, [report?.created_at]);
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
@@ -54,7 +98,6 @@ const ReportDetailView = () => {
   };
 
   const handleSave = () => {
-    // Here you would PUT/PATCH to your backend API
     console.log("Saving updated report:", editData);
     setReport(editData);
     setIsEditing(false);
@@ -65,7 +108,6 @@ const ReportDetailView = () => {
     setIsEditing(false);
   };
 
-  // Format MM:SS for the timer
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');
     const s = (seconds % 60).toString().padStart(2, '0');
@@ -86,6 +128,21 @@ const ReportDetailView = () => {
     actions: { display: 'flex', gap: '12px', marginTop: '24px', borderTop: '1px solid var(--border)', paddingTop: '20px' }
   };
 
+  if (isLoading) {
+    return <div className="main-content"><div style={styles.container}><p>Loading incident details...</p></div></div>;
+  }
+
+  if (error || !report) {
+    return (
+      <div className="main-content">
+        <div style={styles.container}>
+          <button style={{...styles.btnSecondary, padding: '6px 12px', marginBottom: '16px'}} onClick={() => navigate(-1)}>← Back</button>
+          <p style={{ color: 'red' }}>Error: {error || 'Incident not found'}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="main-content">
       <div style={styles.container}>
@@ -98,7 +155,6 @@ const ReportDetailView = () => {
 
         <div style={styles.card}>
           
-          {/* Timer Display */}
           <div style={styles.timerBadge}>
             {timeLeft > 0 ? `Editable for ${formatTime(timeLeft)}` : 'Editing Locked'}
           </div>
@@ -122,7 +178,7 @@ const ReportDetailView = () => {
                   <option value="Meegoda">Meegoda</option>
                 </select>
               ) : (
-                <span style={styles.value}>{report.depot}</span>
+                <span style={styles.value}>{report.depot || 'N/A'}</span>
               )}
             </div>
 
@@ -133,7 +189,7 @@ const ReportDetailView = () => {
                   <option value="Engine">Engine</option>
                   <option value="Brake Failure">Brake Failure</option>
                   <option value="Transmission">Transmission</option>
-                  <option value="Electrical">Electrical</option>
+                  <option value="Electrical Issue">Electrical Issue</option>
                 </select>
               ) : (
                 <span style={styles.value}>{report.category}</span>
@@ -150,14 +206,14 @@ const ReportDetailView = () => {
                 </select>
               ) : (
                 <span style={styles.value}>
-                  <span className={`gov-badge gov-sev-${report.severity.toLowerCase()}`}>{report.severity}</span>
+                  <span className={`gov-badge gov-sev-${report.severity ? report.severity.toLowerCase() : 'low'}`}>{report.severity}</span>
                 </span>
               )}
             </div>
             
             <div style={{...styles.fieldBox, gridColumn: 'span 2'}}>
               <span style={styles.label}>Location Coordinates</span>
-              <span style={styles.value} className="gov-mono">{report.location}</span>
+              <span style={styles.value} className="gov-mono">{report.location || 'N/A'}</span>
             </div>
 
             <div style={{...styles.fieldBox, gridColumn: 'span 2'}}>
