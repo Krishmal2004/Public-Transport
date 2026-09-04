@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Swapped to React Router
 
 const Register = () => {
+  const navigate = useNavigate(); // Initialized standard React navigation
+  
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -34,27 +37,22 @@ const Register = () => {
   const validate = () => {
     const newErrors = {};
 
-    // Name is required
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required.';
     }
 
-    // Phone OR Email is required
     if (!formData.phone.trim() && !formData.email.trim()) {
       newErrors.contact = 'Please provide either a Phone number or an Email address.';
     }
 
-    // Phone must be exactly 10 digits if provided
     if (formData.phone.trim() && !/^\d{10}$/.test(formData.phone.trim())) {
       newErrors.phone = 'Phone number must be exactly 10 digits.';
     }
 
-    // Password is required
     if (!formData.password) {
       newErrors.password = 'Password is required.';
     }
 
-    // Passwords must match
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match.';
     }
@@ -106,7 +104,6 @@ const Register = () => {
     }
   };
 
-  // Inline styles for form elements to complement your gov-theme
   const styles = {
     container: { maxWidth: '600px', margin: '0 auto', padding: '0 16px' },
     formGroup: { marginBottom: '20px', display: 'flex', flexDirection: 'column' },
@@ -132,7 +129,6 @@ const Register = () => {
           <p className="gov-subtitle">Please enter your details to create an account.</p>
         </div>
 
-        {/* Utilizing your metric card class as a clean container for the form */}
         <div className="gov-metric-card" style={{ padding: '32px' }}>
           <form onSubmit={handleSubmit} noValidate>
 
