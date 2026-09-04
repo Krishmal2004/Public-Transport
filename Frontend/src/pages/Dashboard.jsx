@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import IncidentCard from '../components/IncidentCard';
 import { mockIncidents } from '../data/mockData';
+import BASE_URL from '../config';
 
 export default function Dashboard() {
   const [incidents, setIncidents] = useState(mockIncidents);
@@ -8,8 +9,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchIncidents = async () => {
       try {
-        const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-        const res = await fetch(`${API_BASE}/incidents`);
+        const res = await fetch(`${BASE_URL}/incidents`);
         const data = await res.json();
         if (data.success && data.data) {
           const mapped = data.data.map(inc => ({

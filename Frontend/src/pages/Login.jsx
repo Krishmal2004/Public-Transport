@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import the standard React router
+import BASE_URL from '../config';
 
 const Login = () => {
   const navigate = useNavigate(); // Initialize the navigate function
@@ -51,8 +52,7 @@ const Login = () => {
     setSuccess('');
 
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-      const response = await fetch(`${API_BASE}/auth/login`, {
+      const response = await fetch(`${BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { mockIncidents } from '../data/mockData';
+import BASE_URL from '../config';
 
 export default function RepairQueue() {
   const [queue, setQueue] = useState(mockIncidents);
@@ -7,12 +8,12 @@ export default function RepairQueue() {
   const [filterStatus, setFilterStatus] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
 
   useEffect(() => {
     const fetchIncidents = async () => {
       try {
-        const res = await fetch(`${API_BASE}/incidents`);
+        const res = await fetch(`${BASE_URL}/incidents`);
         const data = await res.json();
         if (data.success && data.data) {
           const mapped = data.data.map(inc => ({
@@ -32,7 +33,7 @@ export default function RepairQueue() {
       }
     };
     fetchIncidents();
-  }, [API_BASE]);
+  }, []);
 
   // Handle status change and sync with backend safely
   const handleStatusChange = async (displayId, rawId, newStatus) => {
@@ -43,7 +44,7 @@ export default function RepairQueue() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE}/incidents/${rawId}/status`, {
+      const response = await fetch(`${BASE_URL}/incidents/${rawId}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // Swapped to React Router
+import BASE_URL from '../config';
 
 const Register = () => {
   const navigate = useNavigate(); // Initialized standard React navigation
@@ -70,8 +71,7 @@ const Register = () => {
     setSuccess('');
 
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-      const response = await fetch(`${API_BASE}/auth/register`, {
+      const response = await fetch(`${BASE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

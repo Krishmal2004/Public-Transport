@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import BASE_URL from '../../config';
 
 const ReportDetailView = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const ReportDetailView = () => {
   const [editData, setEditData] = useState(null);
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
 
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
 
   // Fetch the specific incident by its ID directly from the backend
   useEffect(() => {
@@ -30,7 +31,7 @@ const ReportDetailView = () => {
 
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`${API_BASE}/incidents`, {
+        const response = await fetch(`${BASE_URL}/incidents`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -64,7 +65,7 @@ const ReportDetailView = () => {
     };
 
     fetchIncidentDetails();
-  }, [incidentId, API_BASE]);
+  }, [incidentId]);
 
   // Countdown timer logic based on the real created_at timestamp
   useEffect(() => {

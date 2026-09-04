@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BASE_URL from '../config';
 
 // --- MODAL STYLES ---
 const modalStyles = {
@@ -88,8 +89,7 @@ const LoginModal = ({ onClose, onSuccess }) => {
     setApiError('');
 
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-      const response = await fetch(`${API_BASE}/auth/login`, {
+      const response = await fetch(`${BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -181,8 +181,7 @@ const RegisterModal = ({ onClose, onSuccess }) => {
     setApiError('');
 
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-      const response = await fetch(`${API_BASE}/auth/register`, {
+      const response = await fetch(`${BASE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

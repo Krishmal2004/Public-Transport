@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // 1. Import useNavigate
+import BASE_URL from '../../config';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
 
 export default function IncidentReport() {
   const navigate = useNavigate(); // 2. Initialize navigate
@@ -63,7 +64,7 @@ export default function IncidentReport() {
     setSubmitStatus(null);
 
     try {
-      const response = await fetch(`${API_BASE}/incidents`, {
+      const response = await fetch(`${BASE_URL}/incidents`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
