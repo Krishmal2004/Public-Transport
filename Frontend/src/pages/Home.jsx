@@ -75,6 +75,15 @@ const LoginModal = ({ onClose, onSuccess }) => {
     e.preventDefault();
     if (!validate()) return;
 
+    // Hardcoded Admin Check
+    if (formData.username === 'admin@sltb.lk' && formData.password === 'admin123') {
+      const adminUser = { name: 'System Admin', role: 'admin' };
+      localStorage.setItem('token', 'fake-admin-token');
+      localStorage.setItem('user', JSON.stringify(adminUser));
+      onSuccess(adminUser);
+      return;
+    }
+
     setLoading(true);
     setApiError('');
 
@@ -95,7 +104,7 @@ const LoginModal = ({ onClose, onSuccess }) => {
 
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      onSuccess();
+      onSuccess(data.user);
     } catch (err) {
       setApiError('Network error. Please try again.');
     } finally {
@@ -318,7 +327,13 @@ export default function Home() {
       {activeModal === 'login' && (
         <LoginModal 
           onClose={() => setActiveModal(null)} 
-          onSuccess={() => navigate('/report')}
+          onSuccess={(user) => {
+            if (user && user.role === 'admin') {
+              navigate('/dashboard');
+            } else {
+              navigate('/report');
+            }
+          }}
         />
       )}
       {activeModal === 'register' && (
