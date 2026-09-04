@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BASE_URL from '../../config';
 
 const UserDashboard = () => {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ const UserDashboard = () => {
       try {
         const token = localStorage.getItem('token'); 
         
-        const response = await fetch('http://localhost:8000/api/incidents', {
+        const response = await fetch(`${BASE_URL}/incidents`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
