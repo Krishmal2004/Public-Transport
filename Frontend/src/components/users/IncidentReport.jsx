@@ -220,7 +220,32 @@ export default function IncidentReport() {
             </div>
 
             <div style={styles.formGroup}>
-              <label style={styles.label} htmlFor="description">Problem Description</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <label style={{ ...styles.label, marginBottom: 0 }} htmlFor="description">Problem Description</label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    // Mock AI Suggestion
+                    setFormData(prev => ({ ...prev, severity: 'Critical' }));
+                    alert("AI Analysis: 'Critical Safety Hazard' detected based on description.");
+                  }}
+                  style={{
+                    backgroundColor: 'var(--gov-blue-accent)',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  ✨ Auto-Suggest Severity
+                </button>
+              </div>
               <textarea
                 style={styles.textarea}
                 id="description"
