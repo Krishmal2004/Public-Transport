@@ -3,9 +3,14 @@ import { DATABASE_URL } from './env.js';
 
 const { Pool } = pg;
 
+const isProduction = process.env.NODE_ENV === 'production';
+const connectionString = DATABASE_URL;
+
 const pool = new Pool({
-  connectionString: DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+  connectionString,
+  ...(connectionString.includes('neon.tech') || connectionString.includes('sslmode=require') || isProduction
+    ? { ssl: { rejectUnauthorized: false } }
+    : {}),
 });
 
 export const connectDB = async () => {
