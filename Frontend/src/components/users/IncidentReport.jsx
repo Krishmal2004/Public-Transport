@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+const API_BASE = 'http://localhost:8000/api';
+
 export default function IncidentReport() {
   const [formData, setFormData] = useState({
     busNo: '',
@@ -11,7 +13,8 @@ export default function IncidentReport() {
   });
 
   const [errors, setErrors] = useState({});
-  const [submitStatus, setSubmitStatus] = useState(null);
+  const [submitStatus, setSubmitStatus] = useState(null); // { type: 'success'|'error', message: string }
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch location automatically on mount
   useEffect(() => {
@@ -31,6 +34,7 @@ export default function IncidentReport() {
     }
   }, []);
 
+  // Client-side pre-validation (fast feedback before hitting the server)
   const validate = () => {
     const newErrors = {};
     const busRegex = /^[A-Z]{2,3}-[0-9]{4}$/;
@@ -49,24 +53,48 @@ export default function IncidentReport() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validate()) {
-      // Mock submit
-      setSubmitStatus('Incident reported successfully!');
-      console.log('Submitted Incident:', formData);
-      // Reset form (except location)
-      setFormData(prev => ({
-        ...prev,
-        busNo: '',
-        depot: '',
-        category: '',
-        severity: '',
-        description: ''
-      }));
-      setErrors({});
-      
-      setTimeout(() => setSubmitStatus(null), 3000);
+
+    // Run client-side checks first
+    if (!validate()) return;
+
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+
+    try {
+      const response = await fetch(`${API_BASE}/incidents`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Success — reset form (keep location)
+        setSubmitStatus({ type: 'success', message: data.message || 'Incident reported successfully.' });
+        setFormData(prev => ({
+          ...prev,
+          busNo: '',
+          depot: '',
+          category: '',
+          severity: '',
+          description: '',
+        }));
+        setErrors({});
+        setTimeout(() => setSubmitStatus(null), 4000);
+      } else if (response.status === 400 && data.errors) {
+        // Server returned field-level validation errors — merge into local errors
+        setErrors(data.errors);
+        setSubmitStatus({ type: 'error', message: data.message || 'Please correct the errors below.' });
+      } else {
+        setSubmitStatus({ type: 'error', message: data.message || 'Something went wrong. Please try again.' });
+      }
+    } catch (networkError) {
+      setSubmitStatus({ type: 'error', message: 'Unable to reach the server. Check your connection and try again.' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -101,8 +129,16 @@ export default function IncidentReport() {
         </div>
 
         {submitStatus && (
-          <div style={{ padding: '12px', backgroundColor: '#dafbe1', color: '#1a7f37', border: '1px solid #4ac26b', borderRadius: '4px', marginBottom: '20px', fontWeight: '500' }}>
-            {submitStatus}
+          <div style={{
+            padding: '12px',
+            backgroundColor: submitStatus.type === 'success' ? '#dafbe1' : '#fff0f0',
+            color: submitStatus.type === 'success' ? '#1a7f37' : '#cf222e',
+            border: `1px solid ${submitStatus.type === 'success' ? '#4ac26b' : '#ff9898'}`,
+            borderRadius: '4px',
+            marginBottom: '20px',
+            fontWeight: '500',
+          }}>
+            {submitStatus.message}
           </div>
         )}
 
@@ -157,7 +193,7 @@ export default function IncidentReport() {
                 onChange={handleChange}
               >
                 <option value="">Select Category...</option>
-                <option value="Engine">Engine</option>
+                <option value="Engine Overheating">Engine Overheating</option>
                 <option value="Brake Failure">Brake Failure</option>
                 <option value="Transmission">Transmission</option>
                 <option value="Electrical Issue">Electrical Issue</option>
@@ -184,7 +220,32 @@ export default function IncidentReport() {
             </div>
 
             <div style={styles.formGroup}>
-              <label style={styles.label} htmlFor="description">Problem Description</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <label style={{ ...styles.label, marginBottom: 0 }} htmlFor="description">Problem Description</label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    // Mock AI Suggestion
+                    setFormData(prev => ({ ...prev, severity: 'Critical' }));
+                    alert("AI Analysis: 'Critical Safety Hazard' detected based on description.");
+                  }}
+                  style={{
+                    backgroundColor: 'var(--gov-blue-accent)',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  ✨ Auto-Suggest Severity
+                </button>
+              </div>
               <textarea
                 style={styles.textarea}
                 id="description"
@@ -195,8 +256,12 @@ export default function IncidentReport() {
               />
             </div>
 
-            <button type="submit" style={styles.submitBtn}>
-              Submit Incident Report
+            <button
+              type="submit"
+              style={{ ...styles.submitBtn, opacity: isSubmitting ? 0.7 : 1, cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Submitting...' : 'Submit Incident Report'}
             </button>
             
           </form>
