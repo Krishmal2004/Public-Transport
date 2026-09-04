@@ -16,7 +16,7 @@ app.use('/api', routes);
 
 // Health check
 app.get('/', (req, res) => {
-  res.json({ message: 'Public Transport API is running', env: NODE_ENV });
+  res.json({ message: '🚌 Public Transport API is running', env: NODE_ENV });
 });
 
 // Error handling (must be last)
