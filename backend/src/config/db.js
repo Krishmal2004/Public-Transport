@@ -18,4 +18,19 @@ export const connectDB = async () => {
   }
 };
 
+// Creates the users table if it doesn't exist
+export const initDB = async () => {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id        SERIAL PRIMARY KEY,
+      name      VARCHAR(255) NOT NULL,
+      phone     VARCHAR(20)  UNIQUE,
+      email     VARCHAR(255) UNIQUE,
+      password  TEXT         NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+  `);
+  console.log('Database schema initialised');
+};
+
 export default pool;
