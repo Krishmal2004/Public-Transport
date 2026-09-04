@@ -31,7 +31,6 @@ export default function Dashboard() {
   }, []);
 
   // Dynamic Calculations based on data
-  const totalIncidents = incidents.length;
   const groundedBuses = incidents.filter(inc => inc.status !== 'Fixed').length;
   const repairsInProgress = incidents.filter(inc => inc.status === 'In Workshop' || inc.status === 'In-Progress').length;
 

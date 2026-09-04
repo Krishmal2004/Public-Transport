@@ -43,9 +43,9 @@ const modalStyles = {
   label: { fontSize: '13px', fontWeight: '600', color: 'var(--gov-dark-gray, #4a4a4a)', marginBottom: '8px', textTransform: 'uppercase' },
   input: { padding: '10px 12px', border: '1px solid var(--border, #ccc)', borderRadius: '4px', fontSize: '14px' },
   errorText: { color: '#cf222e', fontSize: '12px', marginTop: '4px', fontWeight: '500' },
-  submitBtn: { 
-    backgroundColor: 'var(--gov-black, #1a1a1a)', color: '#fff', border: 'none', 
-    padding: '12px 20px', fontSize: '14px', fontWeight: '600', borderRadius: '4px', cursor: 'pointer', marginTop: '8px', width: '100%' 
+  submitBtn: {
+    backgroundColor: 'var(--gov-black, #1a1a1a)', color: '#fff', border: 'none',
+    padding: '12px 20px', fontSize: '14px', fontWeight: '600', borderRadius: '4px', cursor: 'pointer', marginTop: '8px', width: '100%'
   }
 };
 
@@ -104,10 +104,10 @@ const LoginModal = ({ onClose, onSuccess }) => {
 
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      
+
       // Pass the user data back to the parent component for role-based routing
       onSuccess(data.user);
-    } catch (err) {
+    } catch (_err) {
       setApiError('Network error. Please try again.');
     } finally {
       setLoading(false);
@@ -120,14 +120,14 @@ const LoginModal = ({ onClose, onSuccess }) => {
         <button style={modalStyles.closeBtn} onClick={onClose}>&times;</button>
         <div className="gov-page-header">
           <h2>System Login</h2>
-          <p className="gov-subtitle" style={{marginBottom: '24px'}}>Enter your credentials to access the dashboard.</p>
+          <p className="gov-subtitle" style={{ marginBottom: '24px' }}>Enter your credentials to access the dashboard.</p>
         </div>
         <form onSubmit={handleSubmit} noValidate>
           {apiError && <div style={{ color: '#cf222e', fontSize: '13px', marginBottom: '16px', padding: '10px 12px', backgroundColor: '#fff5f5', border: '1px solid #f5c6cb', borderRadius: '4px' }}>{apiError}</div>}
           <div style={modalStyles.formGroup}>
             <label style={modalStyles.label} htmlFor="username">USERNAME</label>
             <input
-              style={{...modalStyles.input, borderColor: errors.username ? '#cf222e' : 'var(--border, #ccc)'}}
+              style={{ ...modalStyles.input, borderColor: errors.username ? '#cf222e' : 'var(--border, #ccc)' }}
               type="text" id="username" name="username" value={formData.username} onChange={handleChange} placeholder="Enter your email or phone"
             />
             {errors.username && <span style={modalStyles.errorText}>{errors.username}</span>}
@@ -135,7 +135,7 @@ const LoginModal = ({ onClose, onSuccess }) => {
           <div style={modalStyles.formGroup}>
             <label style={modalStyles.label} htmlFor="password">PASSWORD</label>
             <input
-              style={{...modalStyles.input, borderColor: errors.password ? '#cf222e' : 'var(--border, #ccc)'}}
+              style={{ ...modalStyles.input, borderColor: errors.password ? '#cf222e' : 'var(--border, #ccc)' }}
               type="password" id="password" name="password" value={formData.password} onChange={handleChange} placeholder="••••••••"
             />
             {errors.password && <span style={modalStyles.errorText}>{errors.password}</span>}
@@ -176,7 +176,7 @@ const RegisterModal = ({ onClose, onSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-    
+
     setLoading(true);
     setApiError('');
 
@@ -203,7 +203,7 @@ const RegisterModal = ({ onClose, onSuccess }) => {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       onSuccess();
-    } catch (err) {
+    } catch (_err) {
       setApiError('Network error. Please check your connection and try again.');
     } finally {
       setLoading(false);
@@ -216,20 +216,20 @@ const RegisterModal = ({ onClose, onSuccess }) => {
         <button style={modalStyles.closeBtn} onClick={onClose}>&times;</button>
         <div className="gov-page-header">
           <h2>System Registration</h2>
-          <p className="gov-subtitle" style={{marginBottom: '24px'}}>Enter your details to create an account.</p>
+          <p className="gov-subtitle" style={{ marginBottom: '24px' }}>Enter your details to create an account.</p>
         </div>
         <form onSubmit={handleSubmit} noValidate>
           {apiError && <div style={{ color: '#cf222e', fontSize: '13px', marginBottom: '16px', padding: '10px 12px', backgroundColor: '#fff5f5', border: '1px solid #f5c6cb', borderRadius: '4px' }}>{apiError}</div>}
           <div style={modalStyles.formGroup}>
             <label style={modalStyles.label} htmlFor="name">FULL NAME *</label>
-            <input style={{...modalStyles.input, borderColor: errors.name ? '#cf222e' : 'var(--border, #ccc)'}} type="text" id="name" name="name" value={formData.name} onChange={handleChange} placeholder="User Email" />
+            <input style={{ ...modalStyles.input, borderColor: errors.name ? '#cf222e' : 'var(--border, #ccc)' }} type="text" id="name" name="name" value={formData.name} onChange={handleChange} placeholder="User Email" />
             {errors.name && <span style={modalStyles.errorText}>{errors.name}</span>}
           </div>
-          {errors.contact && <div style={{...modalStyles.errorText, marginBottom: '12px'}}>{errors.contact}</div>}
+          {errors.contact && <div style={{ ...modalStyles.errorText, marginBottom: '12px' }}>{errors.contact}</div>}
           <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
               <label style={modalStyles.label} htmlFor="phone">PHONE</label>
-              <input style={{...modalStyles.input, borderColor: errors.phone ? '#cf222e' : 'var(--border, #ccc)'}} type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} placeholder="0771234567" />
+              <input style={{ ...modalStyles.input, borderColor: errors.phone ? '#cf222e' : 'var(--border, #ccc)' }} type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} placeholder="0771234567" />
               {errors.phone && <span style={modalStyles.errorText}>{errors.phone}</span>}
             </div>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -238,14 +238,14 @@ const RegisterModal = ({ onClose, onSuccess }) => {
             </div>
           </div>
           <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
-             <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
               <label style={modalStyles.label} htmlFor="password">PASSWORD *</label>
-              <input style={{...modalStyles.input, borderColor: errors.password ? '#cf222e' : 'var(--border, #ccc)'}} type="password" id="password" name="password" value={formData.password} onChange={handleChange} placeholder="••••••••" />
+              <input style={{ ...modalStyles.input, borderColor: errors.password ? '#cf222e' : 'var(--border, #ccc)' }} type="password" id="password" name="password" value={formData.password} onChange={handleChange} placeholder="••••••••" />
               {errors.password && <span style={modalStyles.errorText}>{errors.password}</span>}
             </div>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
               <label style={modalStyles.label} htmlFor="confirmPassword">CONFIRM *</label>
-              <input style={{...modalStyles.input, borderColor: errors.confirmPassword ? '#cf222e' : 'var(--border, #ccc)'}} type="password" id="confirmPassword" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="••••••••" />
+              <input style={{ ...modalStyles.input, borderColor: errors.confirmPassword ? '#cf222e' : 'var(--border, #ccc)' }} type="password" id="confirmPassword" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="••••••••" />
               {errors.confirmPassword && <span style={modalStyles.errorText}>{errors.confirmPassword}</span>}
             </div>
           </div>
@@ -327,8 +327,8 @@ export default function Home() {
 
       {/* Render Modals based on active state */}
       {activeModal === 'login' && (
-        <LoginModal 
-          onClose={() => setActiveModal(null)} 
+        <LoginModal
+          onClose={() => setActiveModal(null)}
           onSuccess={(user) => {
             if (user && user.role === 'admin') {
               navigate('/dashboard');
@@ -339,8 +339,8 @@ export default function Home() {
         />
       )}
       {activeModal === 'register' && (
-        <RegisterModal 
-          onClose={() => setActiveModal(null)} 
+        <RegisterModal
+          onClose={() => setActiveModal(null)}
           onSuccess={() => setActiveModal('login')}
         />
       )}
