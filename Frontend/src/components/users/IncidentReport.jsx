@@ -5,7 +5,7 @@ const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 export default function IncidentReport() {
   const navigate = useNavigate(); // 2. Initialize navigate
-  
+
   const [formData, setFormData] = useState({
     busNo: '',
     depot: '',
@@ -74,8 +74,8 @@ export default function IncidentReport() {
       if (response.ok) {
         // 3. Navigate to the view details page using the newly created ID
         // Adjust the route '/report-details/' to match whatever you named the route in App.jsx
-        const newIncidentId = data.data?.id || ''; 
-        navigate(`/report/id=${newIncidentId}`); 
+        const newIncidentId = data.data?.id || '';
+        navigate(`/report/id=${newIncidentId}`);
       } else if (response.status === 400 && data.errors) {
         setErrors(data.errors);
         setSubmitStatus({ type: 'error', message: data.message || 'Please correct the errors below.' });
@@ -104,9 +104,9 @@ export default function IncidentReport() {
     input: { padding: '10px 12px', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '14px', fontFamily: 'var(--sans)', color: 'var(--gov-black)', backgroundColor: 'var(--gov-white)' },
     textarea: { padding: '10px 12px', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '14px', minHeight: '100px', fontFamily: 'var(--sans)', color: 'var(--gov-black)', backgroundColor: 'var(--gov-white)' },
     errorText: { color: '#cf222e', fontSize: '12px', marginTop: '4px', fontWeight: '500' },
-    submitBtn: { 
-      backgroundColor: 'var(--gov-black)', color: '#fff', border: 'none', 
-      padding: '12px 20px', fontSize: '14px', fontWeight: '600', borderRadius: '4px', cursor: 'pointer', marginTop: '8px' 
+    submitBtn: {
+      backgroundColor: 'var(--gov-black)', color: '#fff', border: 'none',
+      padding: '12px 20px', fontSize: '14px', fontWeight: '600', borderRadius: '4px', cursor: 'pointer', marginTop: '8px'
     },
     locationText: { fontSize: '13px', color: 'var(--gov-dark-gray)', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', backgroundColor: 'var(--gov-light-gray)', border: '1px solid var(--border)', borderRadius: '4px' }
   };
@@ -135,7 +135,7 @@ export default function IncidentReport() {
 
         <div className="gov-metric-card" style={{ padding: '32px' }}>
           <form onSubmit={handleSubmit} noValidate>
-            
+
             <div style={styles.formGroup}>
               <label style={styles.label}>Automatic Location (GPS)</label>
               <div style={styles.locationText}>
@@ -146,7 +146,7 @@ export default function IncidentReport() {
             <div style={styles.formGroup}>
               <label style={styles.label} htmlFor="busNo">Bus Registration Number</label>
               <input
-                style={{...styles.input, borderColor: errors.busNo ? '#cf222e' : 'var(--border)'}}
+                style={{ ...styles.input, borderColor: errors.busNo ? '#cf222e' : 'var(--border)' }}
                 type="text"
                 id="busNo"
                 name="busNo"
@@ -160,7 +160,7 @@ export default function IncidentReport() {
             <div style={styles.formGroup}>
               <label style={styles.label} htmlFor="depot">Assigned Depot</label>
               <select
-                style={{...styles.input, borderColor: errors.depot ? '#cf222e' : 'var(--border)'}}
+                style={{ ...styles.input, borderColor: errors.depot ? '#cf222e' : 'var(--border)' }}
                 id="depot"
                 name="depot"
                 value={formData.depot}
@@ -177,7 +177,7 @@ export default function IncidentReport() {
             <div style={styles.formGroup}>
               <label style={styles.label} htmlFor="category">Breakdown Category</label>
               <select
-                style={{...styles.input, borderColor: errors.category ? '#cf222e' : 'var(--border)'}}
+                style={{ ...styles.input, borderColor: errors.category ? '#cf222e' : 'var(--border)' }}
                 id="category"
                 name="category"
                 value={formData.category}
@@ -196,7 +196,7 @@ export default function IncidentReport() {
             <div style={styles.formGroup}>
               <label style={styles.label} htmlFor="severity">Severity Level</label>
               <select
-                style={{...styles.input, borderColor: errors.severity ? '#cf222e' : 'var(--border)'}}
+                style={{ ...styles.input, borderColor: errors.severity ? '#cf222e' : 'var(--border)' }}
                 id="severity"
                 name="severity"
                 value={formData.severity}
@@ -253,7 +253,7 @@ export default function IncidentReport() {
             >
               {isSubmitting ? 'Submitting...' : 'Submit Incident Report'}
             </button>
-            
+
           </form>
         </div>
       </div>
