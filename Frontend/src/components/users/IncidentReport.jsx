@@ -157,7 +157,7 @@ export default function IncidentReport() {
                 onChange={handleChange}
               >
                 <option value="">Select Category...</option>
-                <option value="Engine">Engine</option>
+                <option value="Engine Overheating">Engine Overheating</option>
                 <option value="Brake Failure">Brake Failure</option>
                 <option value="Transmission">Transmission</option>
                 <option value="Electrical Issue">Electrical Issue</option>
