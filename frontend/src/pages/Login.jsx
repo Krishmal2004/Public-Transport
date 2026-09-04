@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'; // Import the standard React rou
 
 const Login = () => {
   const navigate = useNavigate(); // Initialize the navigate function
-
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -44,7 +43,7 @@ const Login = () => {
     if (validate()) {
       console.log('Login credentials validated!', formData);
       // Navigate to the dashboard page upon successful validation
-      navigate('/dashboard'); 
+      navigate('/dashboard');
     }
   };
 
