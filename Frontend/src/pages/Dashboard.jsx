@@ -1,45 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import IncidentCard from '../components/IncidentCard';
-
-const API_BASE = 'http://localhost:8000/api';
-
-/** Format a UTC timestamp as a human-readable relative time string */
-function timeAgo(isoString) {
-  const diff = Math.floor((Date.now() - new Date(isoString).getTime()) / 1000);
-  if (diff < 60) return `${diff}s ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
-}
+import { mockIncidents } from '../data/mockData';
 
 export default function Dashboard() {
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [incidents, setIncidents] = useState(mockIncidents);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchIncidents = async () => {
       try {
-        const res = await fetch(`${API_BASE}/incidents/stats`);
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.message || 'Failed to load stats');
-        setStats(json.data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+        const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+        const res = await fetch(`${API_BASE}/incidents`);
+        const data = await res.json();
+        if (data.success && data.data) {
+          const mapped = data.data.map(inc => ({
+            id: `TKT-${inc.id}`,
+            busNo: inc.bus_no,
+            depot: inc.depot,
+            category: inc.category,
+            severity: inc.severity,
+            status: inc.status || 'Reported',
+            time: new Date(inc.created_at).toLocaleString()
+          }));
+          setIncidents(mapped);
+        }
+      } catch (error) {
+        console.error("Failed to fetch live incidents:", error);
       }
     };
-    fetchStats();
+    fetchIncidents();
   }, []);
 
-  // Helper — find count for a given key from bySeverity or byStatus arrays
-  const countFor = (arr = [], key, field = 'severity') =>
-    parseInt((arr.find(r => r[field] === key) || {}).count || 0, 10);
+  // Dynamic Calculations based on data
+  const totalIncidents = incidents.length;
+  const groundedBuses = incidents.filter(inc => inc.status !== 'Fixed').length;
+  const repairsInProgress = incidents.filter(inc => inc.status === 'In Workshop' || inc.status === 'In-Progress').length;
 
-  const grounded = countFor(stats?.byStatus, 'Reported', 'status') +
-                   countFor(stats?.byStatus, 'In Workshop', 'status');
-  const inProgress = countFor(stats?.byStatus, 'In-Progress', 'status');
+  // Just a mockup number for active fleet
+  const activeFleet = 7100 - groundedBuses; // Out of 7100 total buses (from spec)
+
+  // Get only critical/high recent incidents for the dashboard display
+  const recentCriticalBreakdowns = incidents
+    .filter(inc => inc.severity === 'Critical' || inc.severity === 'High')
+    .slice(0, 3); // Show top 3
 
   return (
     <div className="container">
@@ -48,57 +50,29 @@ export default function Dashboard() {
         <p className="gov-subtitle">Real-time status of SLTB operational assets.</p>
       </div>
 
-      {error && (
-        <div style={{ padding: '12px', backgroundColor: '#fff0f0', color: '#cf222e', border: '1px solid #ff9898', borderRadius: '4px', marginBottom: '20px' }}>
-          ⚠ Could not load live data: {error}
-        </div>
-      )}
-
       <div className="gov-metric-grid">
         <div className="gov-metric-card">
-          <div className="gov-metric-label">Total Incidents Reported</div>
-          <div className="gov-metric-value text-danger">
-            {loading ? '—' : stats?.total ?? 0}
-          </div>
-          <div className="gov-metric-trend">All-time across all depots</div>
+          <div className="gov-metric-label">Active Fleet</div>
+          <div className="gov-metric-value text-success">{activeFleet.toLocaleString()}</div>
+          <div className="gov-metric-trend">Total SLTB Capacity: 7,100</div>
         </div>
         <div className="gov-metric-card">
-          <div className="gov-metric-label">Grounded / In Workshop</div>
-          <div className="gov-metric-value text-danger">
-            {loading ? '—' : grounded}
-          </div>
-          <div className="gov-metric-trend">Awaiting repair</div>
+          <div className="gov-metric-label">Grounded Buses</div>
+          <div className="gov-metric-value text-danger">{groundedBuses.toLocaleString()}</div>
+          <div className="gov-metric-trend">Requires Immediate Attention</div>
         </div>
         <div className="gov-metric-card">
           <div className="gov-metric-label">Repairs In Progress</div>
-          <div className="gov-metric-value">
-            {loading ? '—' : inProgress}
-          </div>
-          <div className="gov-metric-trend">Active maintenance</div>
+          <div className="gov-metric-value">{repairsInProgress.toLocaleString()}</div>
+          <div className="gov-metric-trend">Across Active Depots</div>
         </div>
       </div>
 
       <div className="gov-dashboard-section">
-        <h2>Recent Breakdown Reports</h2>
-
-        {loading && (
-          <p style={{ color: 'var(--gov-dark-gray)', fontSize: '14px' }}>Loading incidents...</p>
-        )}
-
-        {!loading && stats?.recent?.length === 0 && (
-          <p style={{ color: 'var(--gov-dark-gray)', fontSize: '14px' }}>No incidents reported yet.</p>
-        )}
-
+        <h2>Recent Critical Breakdowns</h2>
         <div className="gov-incident-grid">
-          {!loading && stats?.recent?.map(incident => (
-            <IncidentCard
-              key={incident.id}
-              busNo={incident.bus_no}
-              category={incident.category}
-              severity={incident.severity}
-              depot={incident.depot}
-              time={timeAgo(incident.created_at)}
-            />
+          {recentCriticalBreakdowns.map(incident => (
+            <IncidentCard key={incident.id} {...incident} />
           ))}
         </div>
       </div>
