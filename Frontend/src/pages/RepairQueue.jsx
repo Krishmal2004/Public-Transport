@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './RepairQueue.css';
 
 // Mock data (Member 4's dataset contribution)
 const initialQueue = [

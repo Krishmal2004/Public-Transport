@@ -1,5 +1,4 @@
 import React from 'react';
-import './IncidentCard.css';
 
 export default function IncidentCard({ busNo, category, severity, time, depot }) {
   // Map severity to a CSS class for color coding

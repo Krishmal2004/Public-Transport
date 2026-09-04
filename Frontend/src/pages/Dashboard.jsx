@@ -1,6 +1,5 @@
 import React from 'react';
 import IncidentCard from '../components/IncidentCard';
-import './Dashboard.css';
 
 export default function Dashboard() {
   // Mock data for initial UI layout
