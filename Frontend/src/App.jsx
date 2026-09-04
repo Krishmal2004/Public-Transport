@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
+import RepairQueue from './pages/RepairQueue';
 
 function App() {
   return (
@@ -15,12 +16,7 @@ function App() {
               <p>Member B will implement this form.</p>
             </div>
           } />
-          <Route path="queue" element={
-            <div className="container" style={{paddingTop: '40px'}}>
-              <h2>Depot Repair Queue</h2>
-              <p>Member B/C will implement this table.</p>
-            </div>
-          } />
+          <Route path="queue" element={<RepairQueue />} />
         </Route>
       </Routes>
     </Router>
